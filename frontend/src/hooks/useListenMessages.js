@@ -7,7 +7,7 @@ import notificationSound from "../assets/sounds/notification.mp3";
 
 const useListenMessages = () => {
 	const { socket } = useSocketContext();
-	const { messages, setMessages } = useConversation();
+	const { messages, setMessages, typingByUserId, setTypingByUserId } = useConversation();
 
 	useEffect(() => {
 		socket?.on("newMessage", (newMessage) => {
@@ -17,7 +17,23 @@ const useListenMessages = () => {
 			setMessages([...messages, newMessage]);
 		});
 
-		return () => socket?.off("newMessage");
-	}, [socket, setMessages, messages]);
+		socket?.on("typing", ({ senderId }) => {
+			if (!senderId) return;
+			setTypingByUserId({ ...typingByUserId, [senderId]: true });
+		});
+
+		socket?.on("stopTyping", ({ senderId }) => {
+			if (!senderId) return;
+			const updated = { ...typingByUserId };
+			delete updated[senderId];
+			setTypingByUserId(updated);
+		});
+
+		return () => {
+			socket?.off("newMessage");
+			socket?.off("typing");
+			socket?.off("stopTyping");
+		};
+	}, [socket, setMessages, messages, typingByUserId, setTypingByUserId]);
 };
 export default useListenMessages;

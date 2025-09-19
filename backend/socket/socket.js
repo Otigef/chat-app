@@ -28,6 +28,21 @@ io.on("connection", (socket) => {
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
 	// socket.on() is used to listen to the events. can be used both on client and server side
+	// typing indicator events
+	socket.on("typing", ({ receiverId }) => {
+		const receiverSocketId = userSocketMap[receiverId];
+		if (receiverSocketId) {
+			io.to(receiverSocketId).emit("typing", { senderId: userId });
+		}
+	});
+
+	socket.on("stopTyping", ({ receiverId }) => {
+		const receiverSocketId = userSocketMap[receiverId];
+		if (receiverSocketId) {
+			io.to(receiverSocketId).emit("stopTyping", { senderId: userId });
+		}
+	});
+
 	socket.on("disconnect", () => {
 		console.log("user disconnected", socket.id);
 		delete userSocketMap[userId];

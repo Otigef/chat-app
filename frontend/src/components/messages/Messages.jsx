@@ -1,13 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import useGetMessages from "../../hooks/useGetMessages";
 import MessageSkeleton from "../skeletons/MessageSkeleton";
 import Message from "./Message";
 import useListenMessages from "../../hooks/useListenMessages";
+import useConversation from "../../zustand/useConversation";
 
 const Messages = () => {
 	const { messages, loading } = useGetMessages();
 	useListenMessages();
 	const lastMessageRef = useRef();
+	const { selectedConversation, typingByUserId } = useConversation();
+	const isPeerTyping = useMemo(() => {
+		if (!selectedConversation?._id) return false;
+		return Boolean(typingByUserId[selectedConversation._id]);
+	}, [typingByUserId, selectedConversation?._id]);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -28,6 +34,10 @@ const Messages = () => {
 			{loading && [...Array(3)].map((_, idx) => <MessageSkeleton key={idx} />)}
 			{!loading && messages.length === 0 && (
 				<p className='text-center'>Send a message to start the conversation</p>
+			)}
+
+			{isPeerTyping && (
+				<div className='text-xs text-gray-300 italic my-2'>Typing...</div>
 			)}
 		</div>
 	);
