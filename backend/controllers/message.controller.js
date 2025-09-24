@@ -8,6 +8,23 @@ export const sendMessage = async (req, res) => {
 		const { id: receiverId } = req.params;
 		const senderId = req.user._id;
 
+		// Input validation
+		if (!message || message.trim().length === 0) {
+			return res.status(400).json({ error: "Message cannot be empty" });
+		}
+
+		if (message.length > 1000) {
+			return res.status(400).json({ error: "Message is too long (max 1000 characters)" });
+		}
+
+		if (!receiverId) {
+			return res.status(400).json({ error: "Receiver ID is required" });
+		}
+
+		if (senderId === receiverId) {
+			return res.status(400).json({ error: "Cannot send message to yourself" });
+		}
+
 		let conversation = await Conversation.findOne({
 			participants: { $all: [senderId, receiverId] },
 		});

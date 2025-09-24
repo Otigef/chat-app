@@ -6,8 +6,29 @@ export const signup = async (req, res) => {
 	try {
 		const { fullName, username, password, confirmPassword, gender } = req.body;
 
+		// Input validation
+		if (!fullName || !username || !password || !confirmPassword || !gender) {
+			return res.status(400).json({ error: "All fields are required" });
+		}
+
+		if (fullName.length < 2 || fullName.length > 50) {
+			return res.status(400).json({ error: "Full name must be between 2 and 50 characters" });
+		}
+
+		if (username.length < 3 || username.length > 30) {
+			return res.status(400).json({ error: "Username must be between 3 and 30 characters" });
+		}
+
+		if (password.length < 6) {
+			return res.status(400).json({ error: "Password must be at least 6 characters long" });
+		}
+
 		if (password !== confirmPassword) {
 			return res.status(400).json({ error: "Passwords don't match" });
+		}
+
+		if (!["male", "female"].includes(gender)) {
+			return res.status(400).json({ error: "Gender must be either 'male' or 'female'" });
 		}
 
 		const user = await User.findOne({ username });
@@ -56,6 +77,12 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
 	try {
 		const { username, password } = req.body;
+
+		// Input validation
+		if (!username || !password) {
+			return res.status(400).json({ error: "Username and password are required" });
+		}
+
 		const user = await User.findOne({ username });
 		const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
 

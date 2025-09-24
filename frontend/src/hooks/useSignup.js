@@ -19,13 +19,20 @@ const useSignup = () => {
 			});
 
 			const data = await res.json();
+			
+			if (!res.ok) {
+				throw new Error(data.error || `HTTP error! status: ${res.status}`);
+			}
+
 			if (data.error) {
 				throw new Error(data.error);
 			}
+			
 			localStorage.setItem("chat-user", JSON.stringify(data));
 			setAuthUser(data);
+			toast.success("Account created successfully!");
 		} catch (error) {
-			toast.error(error.message);
+			toast.error(error.message || "Signup failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}

@@ -18,14 +18,20 @@ const useLogin = () => {
 			});
 
 			const data = await res.json();
+			
+			if (!res.ok) {
+				throw new Error(data.error || `HTTP error! status: ${res.status}`);
+			}
+
 			if (data.error) {
 				throw new Error(data.error);
 			}
 
 			localStorage.setItem("chat-user", JSON.stringify(data));
 			setAuthUser(data);
+			toast.success("Login successful!");
 		} catch (error) {
-			toast.error(error.message);
+			toast.error(error.message || "Login failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}

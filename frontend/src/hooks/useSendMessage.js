@@ -16,12 +16,18 @@ const useSendMessage = () => {
 				},
 				body: JSON.stringify({ message }),
 			});
+			
 			const data = await res.json();
+			
+			if (!res.ok) {
+				throw new Error(data.error || `HTTP error! status: ${res.status}`);
+			}
+			
 			if (data.error) throw new Error(data.error);
 
 			setMessages([...messages, data]);
 		} catch (error) {
-			toast.error(error.message);
+			toast.error(error.message || "Failed to send message. Please try again.");
 		} finally {
 			setLoading(false);
 		}
